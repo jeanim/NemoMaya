@@ -39,5 +39,19 @@
         "parameters": [{"name": "inputMatrix", "type": "Mat4"}]
       }
     ]
+  },
+  {
+    "name": "composeMatrix",
+    "methods": [
+      {
+        "name": "composeMatrix",
+        "returns": [{"name": "outputMatrix", "type": "Mat4"}],
+        "parameters": [
+          {"name": "inputTranslate", "type": "Vec3"},
+          {"name": "inputRotate", "type": "Vec3"},
+          {"name": "inputScale", "type": "Vec3"}
+        ]
+      }
+    ]
   }
 ]
