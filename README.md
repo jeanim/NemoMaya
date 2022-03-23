@@ -1,6 +1,6 @@
-# NemoMaya
+# Nemo: an acceleration framework for Maya Rigging
 
-<aside>💡 设置环境变量NEMO_ROOT </aside>
+💡 请务必设置环境变量NEMO_ROOT
 
 > 对于Linux系统，需要在打开Maya前设置`LD_LIBRARY_PATH`到`<NEMO_ROOT>/lib/<os>-<MayaVersion>/`，注意在Maya.env中设置无效会被覆盖
 
