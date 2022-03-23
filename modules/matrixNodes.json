@@ -1,0 +1,43 @@
+[
+  {
+    "name": "decomposeMatrix",
+    "methods": [
+      {
+        "name": "decomposeMatrixTranslate",
+        "returns": [{"name": "outputTranslate", "type": "Vec3"}],
+        "parameters": [{"name": "inputMatrix", "type": "Mat4"}]
+      },
+      {
+        "name": "decomposeMatrixRotate",
+        "returns": [{"name": "outputRotate", "type": "Vec3"}],
+        "parameters": [{"name": "inputMatrix", "type": "Mat4"}]
+      },
+      {
+        "name": "decomposeMatrixScale",
+        "returns": [{"name": "outputScale", "type": "Vec3"}],
+        "parameters": [{"name": "inputMatrix", "type": "Mat4"}]
+      },
+      {
+        "name": "decomposeMatrixShear",
+        "returns": [{"name": "outputShear", "type": "Vec3"}],
+        "parameters": [{"name": "inputMatrix", "type": "Mat4"}]
+      },
+      {
+        "name": "decomposeMatrixQuat",
+        "returns": [{"name": "outputQuat", "type": "Vec4"}],
+        "parameters": [{"name": "inputMatrix", "type": "Mat4"}]
+      }
+    ]
+  },
+  {
+    "name": "inverseMatrix",
+    "unit": "transform",
+    "methods": [
+      {
+        "name": "inverseMatrix",
+        "returns": [{"name": "outputMatrix", "type": "Mat4"}],
+        "parameters": [{"name": "inputMatrix", "type": "Mat4"}]
+      }
+    ]
+  }
+]

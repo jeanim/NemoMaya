@@ -1,0 +1,76 @@
+[
+  {
+    "name": "weightDriver",
+    "is_dag": true,
+    "filters": [
+      {
+        "target": "output",
+        "actions": [
+          {"name": "controlPoseAttributes", "action": "remove"},
+          {"name": "controlPoseValues", "action": "remove"},
+          {"name": "controlPoseRotateOrder", "action": "remove"},
+          {"name": "controlNode", "action": "remove"},
+          {"name": "blendCurve_Position", "action": "remove"},
+          {"name": "blendCurve_Interp", "action": "remove"},
+          {"name": "blendCurve_FloatValue", "action": "remove"}
+        ]
+      }
+    ],
+    "methods": [
+      {
+        "name": "weightDriverPoses",
+        "returns": [{"name": "output[*]", "type": "Float[]"}],
+        "parameters": [
+          {"name": "type", "type": "Int"},
+          {"name": "rbfMode", "type": "Int"},
+          {"name": "input[*]", "type": "Float[]", "stack": true},
+          {"name": "poses[?].poseInput[?]", "type": "Float[]", "stack": true},
+          {"name": "poses[?].poseValue[?]", "type": "Float[]", "stack": true}
+        ]
+      },
+      {
+        "name": "weightDriverDrivers",
+        "returns": [{"name": "output[*]", "type": "Float[]"}],
+        "parameters": [
+          {"name": "type", "type": "Int"},
+          {"name": "rbfMode", "type": "Int"},
+          {"name": "twistAxis", "type": "Int"},
+          {"name": "opposite", "type": "Bool"},
+          {"name": "driverList[0].driverInput", "type": "Mat4"},
+          {"name": "parentInverseMatrix[0]", "type": "Mat4", "outside": true},
+          {
+            "name": "driverList[0].pose[*].poseMatrix",
+            "type": "Mat4[]",
+            "stack": true
+          },
+          {
+            "name": "driverList[0].pose[*].poseParentMatrix",
+            "type": "Mat4[]",
+            "stack": true
+          },
+          {
+            "name": "driverList[0].pose[*].poseMode",
+            "type": "Int[]",
+            "stack": true
+          }
+        ]
+      },
+      {
+        "name": "weightDriverOutWeight",
+        "returns": [{"name": "outWeight", "type": "Float"}],
+        "ignores": [
+          "translateMax",
+          "blendCurve_FloatValue",
+          "blendCurve_Position",
+          "blendCurve_Interp"
+        ],
+        "parameters": [
+          {"name": "driverMatrix", "type": "Mat4"},
+          {"name": "readerMatrix", "type": "Mat4"},
+          {"name": "angle", "type": "Float"},
+          {"name": "invert", "type": "Bool"}
+        ]
+      }
+    ]
+  }
+]

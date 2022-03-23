@@ -1,0 +1,11 @@
+[
+  {
+    "name": "quatToEuler",
+    "methods": [
+      {
+        "returns": [{"name": "outputRotate", "type": "Vec3"}],
+        "parameters": [{"name": "inputQuat", "type": "Vec4"}]
+      }
+    ]
+  }
+]
