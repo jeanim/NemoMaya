@@ -66,11 +66,21 @@ class WidgetNemoExporter(QtWidgets.QWidget):
     def create_ui(self):
         main_layout = QtWidgets.QVBoxLayout()
 
+        main_layout.addWidget(self.create_version())
         main_layout.addLayout(self.create_controllers())
         main_layout.addLayout(self.create_shapes())
         main_layout.addLayout(self.create_export())
         main_layout.addStretch()
         return main_layout
+    
+    def create_version(self):
+        timestamp = "<unknown>"
+        try:
+            import NemoMaya
+            timestamp = NemoMaya.get_timestamp()
+        except:
+            pass
+        return dayu_widgets.MLabel("Timestamp: {}".format(timestamp))
 
     def preprocess(self):
         from nemo.filter.expressions_destructor import convert_all_expressions

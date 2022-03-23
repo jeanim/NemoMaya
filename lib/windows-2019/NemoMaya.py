@@ -241,6 +241,9 @@ class vec3(object):
 # Register vec3 in _NemoMaya:
 _NemoMaya.vec3_swigregister(vec3)
 
+
+def get_timestamp():
+    return _NemoMaya.get_timestamp()
 class Parser(object):
     thisown = property(lambda x: x.this.own(), lambda x, v: x.this.own(v), doc="The membership flag")
     __repr__ = _swig_repr
