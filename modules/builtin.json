@@ -1539,6 +1539,17 @@
           {"name": "max", "action": "remove"},
           {"name": "maxG", "action": "add"}
         ]
+      },
+      {
+        "target": "outputB",
+        "actions": [
+          {"name": "input", "action": "remove"},
+          {"name": "inputB", "action": "add"},
+          {"name": "min", "action": "remove"},
+          {"name": "minB", "action": "add"},
+          {"name": "max", "action": "remove"},
+          {"name": "maxB", "action": "add"}
+        ]
       }
     ],
     "methods": [
@@ -1552,6 +1563,14 @@
       },
       {
         "returns": [{"name": "outputG", "type": "Float"}],
+        "parameters": [
+          {"name": "inputG", "type": "Float"},
+          {"name": "minG", "type": "Float"},
+          {"name": "maxG", "type": "Float"}
+        ]
+      },
+      {
+        "returns": [{"name": "outputB", "type": "Float"}],
         "parameters": [
           {"name": "inputG", "type": "Float"},
           {"name": "minG", "type": "Float"},
