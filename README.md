@@ -27,8 +27,6 @@ exporter.show()
 
 同时用户也可以直接参考interface直接调用nemo.m2n中的方法，做更强的自定义。
 
-> 目前点了最后的Parse按钮之后会需要等几分钟，并且没有进度条 : (
->
 > 第一次使用时可以把控制器的GLOB和输出的组分别设置为 ***Main_ctrl*** 和 ***Geometry|high|body***, 以便快速测试
 
 导出成功后的文件：
@@ -37,7 +35,6 @@ exporter.show()
 - Resource 是特殊的nemodata格式，它包含了模型，权重，修型等数据。
 - Scene JSON 主要描述了控制器的数据。
 - Debug JSON 使用户可以在本地检查效果错误及其具体原因
-- preprocessed.ma 配合Debug JSON使用
 
 **只有 Graph JSON 需要发送到服务器处理**， 其它的文件会在后续组装文件时用到。
 
@@ -75,5 +72,4 @@ Linux系统可以考虑在env中设置`__GL_SYNC_TO_VBLANK=0`
 
 ## 重要缺陷
 
-- 没有进度条
 - 遇到错误可能崩溃

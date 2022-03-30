@@ -26,31 +26,18 @@ import imp
 
 from maya import cmds
 
-import exporter
+from exporter import Exporter
 from get_io import get_io
 from nemo.filter.scene_collect import get_controllers, get_meshes
-from nemo.filter.expressions_destructor import convert_all_expressions
 import export_controllers
 
 
-def preprocess():
-    convert_all_expressions()
-
-
-def _process(identifier, controllers, shapes, project_dir, addons=[], debug=False):
+def _process(identifier, controllers, shapes, project_dir, addons=[], debug=False, callback=None):
     if os.path.exists(project_dir):
         shutil.rmtree(project_dir)
     os.mkdir(project_dir)
 
     inputs, outputs = get_io(controllers, shapes)
-
-    if debug:
-        bak_file_path = cmds.file(q=True, sn=True)
-        filename = cmds.file(q=True, sn=True, shn=True)
-        base, ext = os.path.splitext(filename)
-        cmds.file(rename="{}/{}.nemo.preprocessed{}".format(project_dir, base, ext))
-        cmds.file(save=True, type="mayaAscii")
-        cmds.file(rename=bak_file_path)
 
     scene_data = export_controllers.export(identifier, controllers, shapes)
     path_scene = '{}/{}__SCENE.json'.format(project_dir, identifier)
@@ -58,16 +45,16 @@ def _process(identifier, controllers, shapes, project_dir, addons=[], debug=Fals
         json.dump(scene_data, f)
 
     import NemoMaya
-    nemo = exporter.Exporter(NemoMaya.Parser)
-    nemo.set_project_dir(project_dir)
-    nemo.set_identifier(identifier)
+    exporter = Exporter(NemoMaya.Parser, debug)
+    exporter.set_project_dir(project_dir)
+    exporter.set_identifier(identifier)
 
-    nemo.set_modules_dir(os.path.realpath('{}/modules'.format(os.environ['NEMO_ROOT'])))
+    exporter.set_modules_dir(os.path.realpath('{}/modules'.format(os.environ['NEMO_ROOT'])))
     for plugin in ['matrixNodes'] + addons:
         cmds.loadPlugin(plugin, quiet=True)
-        nemo.append_module(plugin)
+        exporter.append_module(plugin)
 
-    nemo.parser.init()
+    exporter.init()
 
     addons_data = []
     for x in addons:
@@ -75,18 +62,18 @@ def _process(identifier, controllers, shapes, project_dir, addons=[], debug=Fals
         if not os.path.exists(spec_path):
             continue
         mod = imp.load_source(x, spec_path)
-        addons_data += mod.add_custom_parameters(nemo.parser)
+        addons_data += mod.add_custom_parameters(exporter.parser)
 
-    nemo.parse(inputs, outputs, debug)
+    if not exporter.parse(inputs, outputs, callback):
+        raise RuntimeError("parsing maya file failed, maybe some features unspported yet, please check log for details.")
     # WARNING: addons_data can only be dropped after this moment as parsing done.
     del addons_data
 
-    return nemo.path_graph(), nemo.path_resource(), path_scene, nemo.path_debug() if debug else None
+    return exporter.path_graph(), exporter.path_resource(), path_scene, exporter.path_debug() if debug else None
 
 
 def process(identifier, mayafile, project_dir, debug=True):
     cmds.file(mayafile, o=True, f=True)
-    preprocess()
 
     controllers = get_controllers("*")
     shapes = get_meshes(["Geometry|high|", "Geometry|temp|"])

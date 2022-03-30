@@ -36,17 +36,19 @@ def import_from(data):
 
 def import_single(rig_name, ctrl_name, data):
     utils.create_from_path(data['path'], data['type'])
-    cmds.xform('|{}|NEMO_{}'.format(rig_name, ctrl_name), m=data['rootMatrix'])
     if 'extra_ctrl_name' in data:
-        extra_ctrl_name = 'NEMO_{}|{}'.format(ctrl_name, data['extra_ctrl_name'])
+        extra_ctrl_name = data['extra_ctrl_name']
+        cmds.xform('|{}|NEMO_{}'.format(rig_name, extra_ctrl_name), m=data['rootMatrix'])
         cmds.setAttr(extra_ctrl_name + '.rotateOrder', data['extra_ctrl_rotateOrder'])
         cmds.xform(extra_ctrl_name, m=data['extra_ctrl_matrix'], os=True)
+    else:
+        cmds.xform('|{}|NEMO_{}'.format(rig_name, ctrl_name), m=data['rootMatrix'])
     cmds.xform(ctrl_name, m=data['matrix'], os=True)
     cmds.setAttr('{}.rotateOrder'.format(ctrl_name), data.get('rotateOrder', 0))
 
     default_attributes = {
         'translateX', 'translateY', 'translateZ', 'rotateX', 'rotateY', 'rotateZ', 'scaleX', 'scaleY', 'scaleZ', 'visibility', 'rotatePivot', 'rotatePivotX',
-        'rotatePivotY', 'rotatePivotZ', 'rotatePivotTranslate', 'rotateOrder'
+        'rotatePivotY', 'rotatePivotZ', 'rotatePivotTranslate', 'scalePivot', 'scalePivotX', 'scalePivotY', 'scalePivotZ', 'scalePivotTranslate', 'rotateOrder'
     }
     if data['type'] == 'joint':
         default_attributes.add('radius')
@@ -80,11 +82,11 @@ def import_single(rig_name, ctrl_name, data):
 
         if attributes.get('source', ''):
             cmds.connectAttr(attributes['source'], plug_name)
-        if attributes.get('lock', False):
+        if attributes.get('lock', False) and name != 'visibility':
             cmds.setAttr(plug_name, lock=True)
 
     for attr_name in default_attributes:
-        cmds.setAttr('{}.{}'.format(ctrl_name, attr_name), keyable=False, channelBox=False, lock=True)
+        cmds.setAttr('{}.{}'.format(ctrl_name, attr_name), keyable=False, channelBox=False, lock=False if attr_name == 'visibility' else True)
 
     if data['type'] == 'joint':
         cmds.setAttr('{}.drawStyle'.format(ctrl_name), data['jointDrawStyle'])

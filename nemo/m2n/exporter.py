@@ -22,12 +22,16 @@
 
 class Exporter:
 
-    def __init__(self, parser_ctor):
+    def __init__(self, parser_ctor, debug):
         self.parser = parser_ctor()
         self.modules = []
         self.dir_modules = None
         self.dir_proj = None
         self.identifier = None
+        self.debug = debug
+
+    def init(self):
+        self.parser.init(self.dir_proj, self.debug)
 
     def set_modules_dir(self, dir):
         self.dir_modules = dir
@@ -44,12 +48,23 @@ class Exporter:
         self.modules.append(name)
         self.parser.append_module_path('{}/{}.json'.format(self.dir_modules, name))
 
-    def parse(self, inputs, outputs, debug):
-        self.parser.parse(inputs, outputs, debug)
+    def parse(self, inputs, outputs, callback=None):
+        self.parser.set_inputs(inputs)
+        succeed = True
+        for i, x in enumerate(outputs):
+            if not self.parser.parse(x):
+                succeed = False
+            if callback:
+                callback(int(100 * float(i+1) / float(len(outputs))))
+        self.parser.clean()
+        if not succeed:
+            return False
+
         self.parser.dump_graph(self.path_graph())
         self.parser.dump_resource(self.path_resource())
-        if debug:
+        if self.debug:
             self.parser.dump_debug(self.path_debug())
+        return True
 
     def check_header(self):
         if not self.dir_proj:

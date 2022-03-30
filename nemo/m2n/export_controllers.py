@@ -48,15 +48,15 @@ def export_single_controller(rig_name, ctrl, data):
     assert node_type in {'transform', 'joint'}
     data['type'] = node_type
 
-    path = '|{0}|NEMO_{1}'.format(rig_name, ctrl)
     extra = scene_collect.get_extra(ctrl)
     if extra:
-        path += '|' + extra
+        path = '|{0}|NEMO_{1}|{1}'.format(rig_name, extra)
         data['extra_ctrl_name'] = extra
         data['extra_ctrl_matrix'] = cmds.xform(extra, q=True, m=True, os=True)
         data['extra_ctrl_rotateOrder'] = cmds.getAttr(extra + '.rotateOrder')
         data['rootMatrix'] = cmds.getAttr('{}.parentMatrix'.format(extra))
     else:
+        path = '|{0}|NEMO_{1}'.format(rig_name, ctrl)
         data['rootMatrix'] = cmds.getAttr('{}.parentMatrix'.format(ctrl))
     data['path'] = path + '|' + ctrl
 
@@ -115,7 +115,7 @@ def export_single_controller(rig_name, ctrl, data):
         data['shapes'].append(shape_data)
 
     data['matrix'] = cmds.xform(ctrl, q=True, m=True, os=True)
-    for attr in {'rotatePivot', 'rotatePivotTranslate'}:
+    for attr in {'rotatePivot', 'rotatePivotTranslate', 'scalePivot', 'scalePivotTranslate'}:
         v = cmds.getAttr('{}.{}'.format(ctrl, attr))[0]
         if any(abs(x) > 1E-5 for x in v):
             data['attributes'].append({'name': attr, 'value': v})

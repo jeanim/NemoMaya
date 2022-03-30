@@ -99,7 +99,7 @@ def assemble(path_config, path_scene, path_bin, path_resource, identifier, dll_m
             elif attr == 'parentMatrix0':
                 dest = cmds.listRelatives(obj, p=True)[0]
             elif attr == 'lodVisibility':
-                dest = 'NEMO_{}.visibility'.format(obj)
+                dest = '{}.visibility'.format(obj)
                 if not cmds.objExists(dest):
                     dest = '{}.visibility'.format(obj)
             else:

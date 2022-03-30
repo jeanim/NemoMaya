@@ -251,11 +251,17 @@ class Parser(object):
     def append_module_path(self, path):
         return _NemoMaya.Parser_append_module_path(self, path)
 
-    def init(self):
-        return _NemoMaya.Parser_init(self)
+    def init(self, dir, debug):
+        return _NemoMaya.Parser_init(self, dir, debug)
 
-    def parse(self, inputs, outputs, debug):
-        return _NemoMaya.Parser_parse(self, inputs, outputs, debug)
+    def set_inputs(self, inputs):
+        return _NemoMaya.Parser_set_inputs(self, inputs)
+
+    def parse(self, output):
+        return _NemoMaya.Parser_parse(self, output)
+
+    def clean(self):
+        return _NemoMaya.Parser_clean(self)
 
     def dump_graph(self, path):
         return _NemoMaya.Parser_dump_graph(self, path)
@@ -296,6 +302,28 @@ class CustomParameter(object):
 
 # Register CustomParameter in _NemoMaya:
 _NemoMaya.CustomParameter_swigregister(CustomParameter)
+
+class IntCustomParameter(CustomParameter):
+    thisown = property(lambda x: x.this.own(), lambda x, v: x.this.own(v), doc="The membership flag")
+    __repr__ = _swig_repr
+
+    def __init__(self):
+        if self.__class__ == IntCustomParameter:
+            _self = None
+        else:
+            _self = self
+        _NemoMaya.IntCustomParameter_swiginit(self, _NemoMaya.new_IntCustomParameter(_self, ))
+    __swig_destroy__ = _NemoMaya.delete_IntCustomParameter
+
+    def get(self, arg0, arg1):
+        return _NemoMaya.IntCustomParameter_get(self, arg0, arg1)
+    def __disown__(self):
+        self.this.disown()
+        _NemoMaya.disown_IntCustomParameter(self)
+        return weakref.proxy(self)
+
+# Register IntCustomParameter in _NemoMaya:
+_NemoMaya.IntCustomParameter_swigregister(IntCustomParameter)
 
 class Vec3CustomParameter(CustomParameter):
     thisown = property(lambda x: x.this.own(), lambda x, v: x.this.own(v), doc="The membership flag")

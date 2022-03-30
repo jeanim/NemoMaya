@@ -1208,7 +1208,7 @@
         "parameters": [{"name": "inputMesh", "type": "Mesh"}]
       }
     ]
-  }, 
+  },
   {
     "name": "rebuildCurve",
     "methods": [
@@ -1565,7 +1565,7 @@
     "methods": [
       {
         "name": "distanceBetweenTwoPoints",
-        "returns": [{"name": "distance", "type": "Vec3"}],
+        "returns": [{"name": "distance", "type": "Float"}],
         "parameters": [
           {"name": "point1", "type": "Vec3"},
           {"name": "point2", "type": "Vec3"}
@@ -1573,7 +1573,7 @@
       },
       {
         "name": "distanceBetweenTwoMatrices",
-        "returns": [{"name": "distance", "type": "Vec3"}],
+        "returns": [{"name": "distance", "type": "Float"}],
         "parameters": [
           {"name": "inMatrix1", "type": "Mat4"},
           {"name": "inMatrix2", "type": "Mat4"}
@@ -1708,5 +1708,18 @@
     "is_dag": true,
     "filters": [{"target": "translate", "actions": [{"action": "clear"}]}],
     "methods": []
+  },
+  {
+    "name": "expression",
+    "methods": [
+      {
+        "returns": [{"name": "output[*]", "type": "Float[]"}],
+        "parameters": [
+          {"name": "input[*]", "type": "Float[]"},
+          {"name": "time", "type": "Float"}
+        ],
+        "ignores": ["attribute", "object", "internalExpression", "expression"]
+      }
+    ]
   }
 ]

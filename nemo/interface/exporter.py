@@ -72,7 +72,7 @@ class WidgetNemoExporter(QtWidgets.QWidget):
         main_layout.addLayout(self.create_export())
         main_layout.addStretch()
         return main_layout
-    
+
     def create_version(self):
         timestamp = "<unknown>"
         try:
@@ -81,10 +81,6 @@ class WidgetNemoExporter(QtWidgets.QWidget):
         except:
             pass
         return dayu_widgets.MLabel("Timestamp: {}".format(timestamp))
-
-    def preprocess(self):
-        from nemo.filter.expressions_destructor import convert_all_expressions
-        convert_all_expressions()
 
     def create_controllers(self):
         layout = QtWidgets.QVBoxLayout()
@@ -207,6 +203,9 @@ class WidgetNemoExporter(QtWidgets.QWidget):
         self.btn_export = dayu_widgets.MPushButton("Parse")
         self.btn_export.clicked.connect(self.on_export)
         layout.addWidget(self.btn_export)
+
+        self.progress_parse = dayu_widgets.MProgressBar().auto_color()
+        layout.addWidget(self.progress_parse)
         return layout
 
     def on_export(self):
@@ -226,8 +225,13 @@ class WidgetNemoExporter(QtWidgets.QWidget):
         try:
             cmds.optionVar(sv=('NEMO_EXPORT_CONFIG', self.save_config()))
 
-            self.preprocess()
-            m2n._process(name, self.get_controllers(), self.get_shapes(), str(path), addons=self.tags_addons.get_dayu_checked(), debug=True)
+            m2n._process(name,
+                         self.get_controllers(),
+                         self.get_shapes(),
+                         str(path),
+                         addons=self.tags_addons.get_dayu_checked(),
+                         debug=True,
+                         callback=lambda percent: self.progress_parse.setValue(percent))
         except Exception as e:
             QMessageBox.critical(self, "Error", str(e))
         else:
