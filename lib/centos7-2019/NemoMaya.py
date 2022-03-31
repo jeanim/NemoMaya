@@ -311,11 +311,17 @@ class Parser(_object):
     def append_module_path(self, path):
         return _NemoMaya.Parser_append_module_path(self, path)
 
-    def init(self):
-        return _NemoMaya.Parser_init(self)
+    def init(self, dir, debug):
+        return _NemoMaya.Parser_init(self, dir, debug)
 
-    def parse(self, inputs, outputs, debug):
-        return _NemoMaya.Parser_parse(self, inputs, outputs, debug)
+    def set_inputs(self, inputs):
+        return _NemoMaya.Parser_set_inputs(self, inputs)
+
+    def parse(self, output):
+        return _NemoMaya.Parser_parse(self, output)
+
+    def clean(self):
+        return _NemoMaya.Parser_clean(self)
 
     def dump_graph(self, path):
         return _NemoMaya.Parser_dump_graph(self, path)
@@ -375,6 +381,39 @@ class CustomParameter(_object):
         return _NemoMaya.CustomParameter_process(self, plug, graph, resource, port, clientData)
 CustomParameter_swigregister = _NemoMaya.CustomParameter_swigregister
 CustomParameter_swigregister(CustomParameter)
+
+class IntCustomParameter(CustomParameter):
+    __swig_setmethods__ = {}
+    for _s in [CustomParameter]:
+        __swig_setmethods__.update(getattr(_s, '__swig_setmethods__', {}))
+    __setattr__ = lambda self, name, value: _swig_setattr(self, IntCustomParameter, name, value)
+    __swig_getmethods__ = {}
+    for _s in [CustomParameter]:
+        __swig_getmethods__.update(getattr(_s, '__swig_getmethods__', {}))
+    __getattr__ = lambda self, name: _swig_getattr(self, IntCustomParameter, name)
+    __repr__ = _swig_repr
+
+    def __init__(self):
+        if self.__class__ == IntCustomParameter:
+            _self = None
+        else:
+            _self = self
+        this = _NemoMaya.new_IntCustomParameter(_self, )
+        try:
+            self.this.append(this)
+        except __builtin__.Exception:
+            self.this = this
+    __swig_destroy__ = _NemoMaya.delete_IntCustomParameter
+    __del__ = lambda self: None
+
+    def get(self, arg0, arg1):
+        return _NemoMaya.IntCustomParameter_get(self, arg0, arg1)
+    def __disown__(self):
+        self.this.disown()
+        _NemoMaya.disown_IntCustomParameter(self)
+        return weakref_proxy(self)
+IntCustomParameter_swigregister = _NemoMaya.IntCustomParameter_swigregister
+IntCustomParameter_swigregister(IntCustomParameter)
 
 class Vec3CustomParameter(CustomParameter):
     __swig_setmethods__ = {}
