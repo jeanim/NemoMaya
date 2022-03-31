@@ -1136,6 +1136,38 @@
         "parameters": [{"name": "input[0].inputGeometry", "type": "Shape"}]
       },
       {
+        "name": "clusterFull",
+        "returns": [{"name": "outputGeometry[$0]", "type": "Shape"}],
+        "ignores": ["geomMatrix[0]"],
+        "parameters": [
+          {"name": "input[$0].inputGeometry", "type": "Shape", "mutable": true},
+          {"name": "matrix", "type": "Mat4"},
+          {"name": "bindPreMatrix", "type": "Mat4"},
+          {"name": "angleInterpolation", "type": "Int"},
+          {"name": "weights[$0].weights[?]", "type": "Float[]"},
+          {"name": "translate", "outside_module": "transform", "type": "Vec3"},
+          {"name": "rotate", "outside_module": "transform", "type": "Vec3"},
+          {"name": "rotateOrder", "outside_module": "transform", "type": "Int"},
+          {"name": "scale", "outside_module": "transform", "type": "Vec3"},
+          {
+            "name": "rotatePivot",
+            "outside_module": "transform",
+            "type": "Vec3"
+          },
+          {"name": "scalePivot", "outside_module": "transform", "type": "Vec3"},
+          {
+            "name": "rotatePivotTranslate",
+            "outside_module": "transform",
+            "type": "Vec3"
+          },
+          {
+            "name": "scalePivotTranslate",
+            "outside_module": "transform",
+            "type": "Vec3"
+          }
+        ]
+      },
+      {
         "returns": [{"name": "outputGeometry[$0]", "type": "Shape"}],
         "ignores": ["geomMatrix[0]"],
         "parameters": [
