@@ -1734,10 +1734,23 @@
       {
         "returns": [{"name": "output[*]", "type": "Float[]"}],
         "parameters": [
-          {"name": "input[*]", "type": "Float[]"},
-          {"name": "time", "type": "Float"}
+          {"name": "input[*]", "type": "Float[]"}
         ],
-        "ignores": ["attribute", "object", "internalExpression", "expression"]
+        "ignores": ["attribute", "object", "internalExpression", "expression", "time"]
+      }
+    ]
+  },
+  {
+    "name": "pointMatrixMult",
+    "methods": [
+      {
+        "name": "pointMatrixMult",
+        "returns": [{"name": "output", "type": "Vec3"}],
+        "parameters": [
+          {"name": "inPoint", "type": "Vec3"},
+          {"name": "inMatrix", "type": "Mat4"},
+          {"name": "vectorMultiply", "type": "Bool"}
+        ]
       }
     ]
   }
