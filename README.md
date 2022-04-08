@@ -85,7 +85,7 @@ assembler.show()
 
 ## 检查
 
-如果用生成的Nemo Rig去替换动画文件中的原始Rig，可能会发送效果不匹配的情况，甚至直接崩溃。此时可以使用`NemoMayaNodes`插件中的NemoCheck命令检查错误。
+如果用生成的Nemo Rig去替换动画文件中的原始Rig，可能会发生效果不匹配的情况，甚至直接崩溃。此时可以使用`NemoMayaNodes`插件中的NemoCheck命令检查错误。
 
 NemoCheck命令使用原始Rig而非Nemo Rig，此命令会检查Nemo中所有节点的计算结果与Maya中是否匹配，并生成日志文件。
 
