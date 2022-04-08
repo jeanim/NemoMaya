@@ -19,6 +19,7 @@
  CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  """
 
+from __future__ import print_function
 from maya import cmds
 from nemo import utils
 
@@ -54,11 +55,19 @@ def list_channel_box(obj):
     return attributes
 
 
+def is_visibility_always_off(obj):
+    return not cmds.getAttr('{}.visibility'.format(obj)) and not cmds.listConnections("{}.visibility".format(obj), s=True, d=False)
+
+
 def is_world_visibility_always_off(obj):
+    shapes = cmds.listRelatives(obj, shapes=True, ni=True)
+    if shapes and all(is_visibility_always_off(x) for x in shapes):
+        return True
+    
     segments = cmds.ls(obj, long=True)[0].split('|')[1:]
     transforms = ['|'.join(segments[:i]) for i in range(1, 1 + len(segments))]
     for x in transforms:
-        if not cmds.listConnections("{}.visibility".format(x), s=True, d=False) and not cmds.getAttr('{}.visibility'.format(x)):
+        if is_visibility_always_off(x):
             return True
     return False
 
@@ -93,7 +102,7 @@ def get_controllers(pattern, curve=True, surface=False, free=True, visible=True)
     objects = cmds.ls(pattern, transforms=True)
     controllers = []
     for obj in objects:
-        shapes = cmds.listRelatives(obj, shapes=True) or []
+        shapes = cmds.listRelatives(obj, shapes=True, ni=True) or []
         pass_test = False
         for s in shapes:
             if cmds.getAttr('{}.overrideEnabled'.format(s)) and cmds.getAttr('{}.overrideDisplayType'.format(s)):

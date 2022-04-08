@@ -19,6 +19,7 @@
  CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  """
 
+from __future__ import print_function
 from PySide2 import QtWidgets, QtCore
 from PySide2.QtWidgets import QMessageBox
 import maya.OpenMayaUI as omui
@@ -121,6 +122,7 @@ class WidgetNemoExporter(QtWidgets.QWidget):
 
     def on_select_controllers(self):
         cmds.select(self.get_controllers())
+        print('{} controllers are selected'.format(len(cmds.ls(sl=True))))
 
     def create_shapes(self):
         layout = QtWidgets.QVBoxLayout()
@@ -163,6 +165,7 @@ class WidgetNemoExporter(QtWidgets.QWidget):
 
     def on_select_shapes(self):
         cmds.select(self.get_shapes())
+        print('{} meshes are selected'.format(len(cmds.ls(sl=True))))
 
     def create_export(self):
         layout = QtWidgets.QVBoxLayout()

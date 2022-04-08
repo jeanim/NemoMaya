@@ -62,9 +62,11 @@ class WidgetNemoAssembler(QtWidgets.QWidget):
     def create_ui(self):
         layout = QtWidgets.QVBoxLayout()
 
+        layout.addWidget(self.create_version())
+
         layout_name = QtWidgets.QHBoxLayout()
         label_head = dayu_widgets.MLabel(text="Name:")
-        label_head.setAlignment(QtCore.Qt.AlignCenter)
+        label_head.setAlignment(QtCore.Qt.ElideLeft)
         label_head.setFixedWidth(60)
         layout_name.addWidget(label_head)
         self.label_name = dayu_widgets.MLabel(text=WidgetNemoAssembler.symbol_unknown)
@@ -73,9 +75,10 @@ class WidgetNemoAssembler(QtWidgets.QWidget):
         layout.addLayout(layout_name)
 
         layout_receive = QtWidgets.QHBoxLayout()
+        layout_receive.addWidget(dayu_widgets.MLabel("Receive:"))
         self.browser_dir_receive = dayu_widgets.MClickBrowserFolderToolButton()
         layout_receive.addWidget(self.browser_dir_receive)
-        label_receive = dayu_widgets.MLabel("<Select Received Folder>")
+        label_receive = dayu_widgets.MLabel("<Select Folder>")
         label_receive.set_elide_mode(QtCore.Qt.ElideLeft)
         layout_receive.addWidget(label_receive)
         self.browser_dir_receive.sig_folder_changed.connect(label_receive.setText)
@@ -83,21 +86,23 @@ class WidgetNemoAssembler(QtWidgets.QWidget):
         layout.addLayout(layout_receive)
 
         layout_upload = QtWidgets.QHBoxLayout()
+        layout_upload.addWidget(dayu_widgets.MLabel("Export: "))
         self.browser_dir_upload = dayu_widgets.MClickBrowserFolderToolButton()
         layout_upload.addWidget(self.browser_dir_upload)
-        label_upload = dayu_widgets.MLabel("<Select Export Folder>")
-        label_upload.set_elide_mode(QtCore.Qt.ElideLeft)
-        layout_upload.addWidget(label_upload)
-        self.browser_dir_upload.sig_folder_changed.connect(label_upload.setText)
+        self.label_upload = dayu_widgets.MLabel("<Select Folder>")
+        self.label_upload.set_elide_mode(QtCore.Qt.ElideLeft)
+        layout_upload.addWidget(self.label_upload)
+        self.browser_dir_upload.sig_folder_changed.connect(self.on_select_upload_folder)
         layout.addLayout(layout_upload)
 
         layout_output = QtWidgets.QHBoxLayout()
+        layout_output.addWidget(dayu_widgets.MLabel("Runtime:"))
         self.browser_dir_output = dayu_widgets.MClickBrowserFolderToolButton()
         layout_output.addWidget(self.browser_dir_output)
-        label_output = dayu_widgets.MLabel("<Select Output Folder>")
-        label_output.set_elide_mode(QtCore.Qt.ElideLeft)
-        layout_output.addWidget(label_output)
-        self.browser_dir_output.sig_folder_changed.connect(label_output.setText)
+        self.label_output = dayu_widgets.MLabel("<Select Folder>")
+        self.label_output.set_elide_mode(QtCore.Qt.ElideLeft)
+        layout_output.addWidget(self.label_output)
+        self.browser_dir_output.sig_folder_changed.connect(self.on_select_output_folder)
         layout.addLayout(layout_output)
 
         btn_assemble = dayu_widgets.MPushButton("Assemble")
@@ -115,6 +120,22 @@ class WidgetNemoAssembler(QtWidgets.QWidget):
             self.label_name.setText(os.path.splitext(os.path.basename(binary))[0])
         except Exception as e:
             self.label_name.setText(WidgetNemoAssembler.symbol_unknown)
+
+    def on_select_upload_folder(self, path):
+        if path is None:
+            return
+        if path == self.browser_dir_output.dayu_path:
+            QMessageBox.critical(self, "Error", "Export folder cannot be the same with Output folder")
+            return
+        self.label_upload.setText(path)
+
+    def on_select_output_folder(self, path):
+        if path is None:
+            return
+        if path == self.browser_dir_upload.dayu_path:
+            QMessageBox.critical(self, "Error", "Output folder cannot be the same with Export folder")
+            return
+        self.label_output.setText(path)
 
     def on_assemble(self):
         name = self.label_name.text()
@@ -149,6 +170,15 @@ class WidgetNemoAssembler(QtWidgets.QWidget):
             cmds.file(save=True, type="mayaAscii")
         except Exception as e:
             QMessageBox.critical(self, "Error", str(e))
+
+    def create_version(self):
+        timestamp = "<unknown>"
+        try:
+            import NemoMaya
+            timestamp = NemoMaya.get_timestamp()
+        except:
+            pass
+        return dayu_widgets.MLabel("Timestamp: {}".format(timestamp))
 
 
 def show():
