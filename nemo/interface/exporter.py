@@ -57,7 +57,9 @@ class WidgetNemoExporter(QtWidgets.QWidget):
         self.setWindowFlags(QtCore.Qt.Window)
         self.setWindowTitle("Nemo Exporter")
         self.layout = self.create_ui()
+        self.controllers = []
         self.setLayout(self.layout)
+        cmds.select(cl=True)
 
         if cmds.optionVar(exists='NEMO_EXPORT_CONFIG'):
             self.load_config(json.loads(cmds.optionVar(q='NEMO_EXPORT_CONFIG')))
@@ -91,38 +93,95 @@ class WidgetNemoExporter(QtWidgets.QWidget):
         label_readme.setWordWrap(True)
         layout.addWidget(label_readme)
 
-        self.text_ctrl_pattern = dayu_widgets.MLineEdit()
-        label_head = dayu_widgets.MLabel(text="GLOB").mark().secondary()
+        self.list_glob = QtWidgets.QListWidget()
+        self.list_glob.setFixedHeight(60)
+        layout.addWidget(self.list_glob)
+
+        self.text_controller_patterns = dayu_widgets.MLineEdit("<GLOB>")
+        label_head = dayu_widgets.MLabel(text="Pattern").mark().secondary()
         label_head.setAlignment(QtCore.Qt.AlignCenter)
         label_head.setFixedWidth(60)
-        self.text_ctrl_pattern.set_prefix_widget(label_head)
-        layout.addWidget(self.text_ctrl_pattern)
+        self.text_controller_patterns.set_prefix_widget(label_head)
+        layout.addWidget(self.text_controller_patterns)
+
+        layout_list = QtWidgets.QHBoxLayout()
+        btn_remove_current = dayu_widgets.MPushButton("Remove")
+        btn_remove_current.clicked.connect(lambda: self.list_glob.takeItem(self.list_glob.currentRow()
+                                                                           if self.list_glob.hasFocus() else self.list_prefix.count() - 1))
+        btn_remove_current.clicked.connect(self.on_change_controller_pattern)
+        layout_list.addWidget(btn_remove_current)
+        btn_add_pattern = dayu_widgets.MPushButton("Add")
+        btn_add_pattern.clicked.connect(lambda: self.list_glob.addItem(self.text_controller_patterns.text()))
+        btn_add_pattern.clicked.connect(self.on_change_controller_pattern)
+        layout_list.addWidget(btn_add_pattern)
+        layout.addLayout(layout_list)
 
         self.tags_controllers = dayu_widgets.MCheckBoxGroup()
         self.tags_controllers.set_button_list(["Curve", "Surface", "Free", "Visible"])
+        self.tags_controllers.sig_checked_changed.connect(self.on_change_controller_pattern)
         layout.addWidget(self.tags_controllers)
-        label_locked = dayu_widgets.MLabel("Free means at least one attribute in channel box except Visibility is not Locked.")
-        label_locked.setWordWrap(True)
-        layout.addWidget(label_locked)
-        label_visible = dayu_widgets.MLabel("Visible means its visibility is on or directly driven by another controller.")
-        label_visible.setWordWrap(True)
-        layout.addWidget(label_visible)
-        self.btn_controllers = dayu_widgets.MPushButton("Select Controllers")
-        self.btn_controllers.clicked.connect(self.on_select_controllers)
-        layout.addWidget(self.btn_controllers)
+
+        btn_controllers = dayu_widgets.MPushButton("Select Controllers")
+        btn_controllers.clicked.connect(self.on_select_controllers)
+        layout.addWidget(btn_controllers)
+
+        layout_list = QtWidgets.QHBoxLayout()
+        btn_append = dayu_widgets.MPushButton("Append")
+        btn_append.clicked.connect(self.append_select_controllers)
+        layout_list.addWidget(btn_append)
+        btn_deslect = dayu_widgets.MPushButton("Deselect")
+        btn_deslect.clicked.connect(self.deselect_controllers)
+        layout_list.addWidget(btn_deslect)
+        layout.addLayout(layout_list)
+
         return layout
 
     def get_controllers(self):
-        args = {'pattern': self.text_ctrl_pattern.text()}
+        if self.controllers:
+            return self.controllers
+
+        patterns = [self.list_glob.item(row).text() for row in range(self.list_glob.count())]
+        args = {'patterns': patterns}
         for x in self.tags_controllers.get_dayu_checked():
             args[str(x).lower()] = True
 
         from nemo.filter import scene_collect
         return scene_collect.get_controllers(**args)
 
+    def append_select_controllers(self):
+        selection = cmds.ls(sl=True)
+        for x in selection:
+            if cmds.nodeType(x) not in {'transform', 'joint'}:
+                QMessageBox.critical(self, "Controller can only be transform or joint",
+                                     '{}({}) is not allowed for controller. Please make sure not selecting any shapes.'.format(x, cmds.nodeType(x)))
+                return
+
+        if not self.controllers:
+            self.controllers = self.get_controllers()
+        self.controllers.extend(selection)
+        self.on_select_controllers()
+
+    def deselect_controllers(self):
+        selection = cmds.ls(sl=True)
+        if not selection:
+            return
+
+        if not self.controllers:
+            self.controllers = self.get_controllers()
+        print("deselect: ", selection)
+        print("controllers before select:", len(self.controllers))
+        self.controllers = [x for x in self.controllers if x not in selection]
+        print("controllers after select:", len(self.controllers))
+        self.on_select_controllers()
+
+    def on_change_controller_pattern(self):
+        if self.controllers:
+            QMessageBox.information(self, "Attention", 'change controller patern will clear your manual selection')
+            self.controllers = []
+
     def on_select_controllers(self):
         cmds.select(self.get_controllers())
-        print('{} controllers are selected'.format(len(cmds.ls(sl=True))))
+        cmds.warning('{} controllers are selected. use `ls -sl` to list them.'.format(len(cmds.ls(sl=True))))
 
     def create_shapes(self):
         layout = QtWidgets.QVBoxLayout()
@@ -242,7 +301,7 @@ class WidgetNemoExporter(QtWidgets.QWidget):
 
     def save_config(self):
         config = dict()
-        config['ctrl_pattern'] = self.text_ctrl_pattern.text()
+        config['ctrl_pattern'] = [self.list_glob.item(row).text() for row in range(self.list_glob.count())]
         config['ctrl_tags'] = [str(x) for x in self.tags_controllers.get_dayu_checked()]
         config['shapes_keyword'] = [self.list_prefix.item(row).text() for row in range(self.list_prefix.count())]
         config['export_dir'] = str(self.browser_dir_export.dayu_path)
@@ -250,14 +309,18 @@ class WidgetNemoExporter(QtWidgets.QWidget):
         return json.dumps(config)
 
     def load_config(self, config):
-        self.text_ctrl_pattern.setText(config.get('ctrl_pattern', '*_CTRL'))
-        self.tags_controllers.set_dayu_checked(config.get('ctrl_tags', ["Curve", "Free", "Visible"]))
-        for keyword in config.get('shapes_keyword', ['Geometry|high|', 'Geometry|temp|']):
-            self.list_prefix.addItem(keyword)
-        if 'export_dir' in config:
-            self.browser_dir_export.set_dayu_path(config['export_dir'])
-            self.browser_dir_export.sig_folder_changed.emit(self.browser_dir_export.get_dayu_path())
-        self.tags_addons.set_dayu_checked(config.get('addons', ["quatNodes"]))
+        try:
+            for pattern in config.get('ctrl_pattern', ['*']):
+                self.list_glob.addItem(pattern)
+            self.tags_controllers.set_dayu_checked(config.get('ctrl_tags', ["Curve", "Free", "Visible"]))
+            for keyword in config.get('shapes_keyword', ['Geometry|high|', 'Geometry|temp|']):
+                self.list_prefix.addItem(keyword)
+            if 'export_dir' in config:
+                self.browser_dir_export.set_dayu_path(config['export_dir'])
+                self.browser_dir_export.sig_folder_changed.emit(self.browser_dir_export.get_dayu_path())
+            self.tags_addons.set_dayu_checked(config.get('addons', ["quatNodes"]))
+        except Exception:
+            pass
 
 
 def show():

@@ -55,15 +55,32 @@ def list_channel_box(obj):
     return attributes
 
 
+def get_history(plug):
+    sources = cmds.listConnections(plug, p=True, s=True, d=False)
+    if not sources:
+        return []
+    return sum([get_history(x) for x in sources], [])
+
+
 def is_visibility_always_off(obj):
-    return not cmds.getAttr('{}.visibility'.format(obj)) and not cmds.listConnections("{}.visibility".format(obj), s=True, d=False)
+    if cmds.getAttr('{}.visibility'.format(obj)):
+        return False
+    history = get_history('{}.visibility'.format(obj))
+    if not history:
+        return True
+    for plug in history:
+        if cmds.getAttr(plug, lock=True):
+            continue
+        if not cmds.getAttr(plug, cb=True):
+            return False
+    return True
 
 
 def is_world_visibility_always_off(obj):
     shapes = cmds.listRelatives(obj, shapes=True, ni=True)
     if shapes and all(is_visibility_always_off(x) for x in shapes):
         return True
-    
+
     segments = cmds.ls(obj, long=True)[0].split('|')[1:]
     transforms = ['|'.join(segments[:i]) for i in range(1, 1 + len(segments))]
     for x in transforms:
@@ -98,30 +115,32 @@ def get_extra(ctrl):
     return None if is_channel_box_driven(parent) else parent
 
 
-def get_controllers(pattern, curve=True, surface=False, free=True, visible=True):
-    objects = cmds.ls(pattern, transforms=True)
-    controllers = []
-    for obj in objects:
-        shapes = cmds.listRelatives(obj, shapes=True, ni=True) or []
-        pass_test = False
-        for s in shapes:
-            if cmds.getAttr('{}.overrideEnabled'.format(s)) and cmds.getAttr('{}.overrideDisplayType'.format(s)):
-                continue
-            if curve and cmds.nodeType(s) == 'nurbsCurve':
-                pass_test = True
-            if surface and cmds.nodeType(obj) == "nurbsSurface":
-                pass_test = True
-            if not curve and not surface:
-                pass_test = True
-        if pass_test:
-            controllers.append(obj)
+def get_controllers(patterns, curve=True, surface=False, free=True, visible=True):
+    results = []
+    for pattern in patterns:
+        objects = cmds.ls(pattern, transforms=True)
+        controllers = []
+        for obj in objects:
+            shapes = cmds.listRelatives(obj, shapes=True, ni=True) or []
+            pass_test = False
+            for s in shapes:
+                if cmds.getAttr('{}.overrideEnabled'.format(s)) and cmds.getAttr('{}.overrideDisplayType'.format(s)):
+                    continue
+                if curve and cmds.nodeType(s) == 'nurbsCurve':
+                    pass_test = True
+                if surface and cmds.nodeType(obj) == "nurbsSurface":
+                    pass_test = True
+                if not curve and not surface:
+                    pass_test = True
+            if pass_test:
+                controllers.append(obj)
 
-    if free:
-        controllers = [ctrl for ctrl in controllers if not is_channel_box_locked(ctrl)]
-    if visible:
-        controllers = [ctrl for ctrl in controllers if not is_world_visibility_always_off(ctrl)]
-
-    return controllers
+        if free:
+            controllers = [ctrl for ctrl in controllers if not is_channel_box_locked(ctrl)]
+        if visible:
+            controllers = [ctrl for ctrl in controllers if not is_world_visibility_always_off(ctrl)]
+        results.extend(controllers)
+    return results
 
 
 def get_meshes(patterns):

@@ -96,6 +96,8 @@ def assemble(path_config, path_scene, path_bin, path_resource, identifier, dll_m
         if is_output:
             if attr == 'worldMesh0':
                 dest = '{}.inMesh'.format(obj)
+            elif attr == 'worldSpace0':
+                dest = '{}.create'.format(obj)
             elif attr == 'parentMatrix0':
                 dest = cmds.listRelatives(obj, p=True)[0]
             elif attr == 'lodVisibility':
