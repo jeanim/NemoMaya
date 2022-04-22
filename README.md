@@ -90,9 +90,13 @@ assembler.show()
 
 如果用生成的Nemo Rig去替换动画文件中的原始Rig，可能会发生效果不匹配的情况，甚至直接崩溃。此时可以使用`NemoMayaNodes`插件中的NemoCheck命令检查错误。
 
-NemoCheck命令使用原始Rig而非Nemo Rig，此命令会检查Nemo中所有节点的计算结果与Maya中是否匹配，并生成日志文件。
+💡 使用NemoCheck命令需首先打开原始Rig（而非Nemo Rig），或者包含原始Rig的动画文件（此时需要设置ns命令空间）。
 
-NemoCheck命令有两个参数，分别是[导出](#导出)的 Debug JSON 和 nemodata，除此之外的Flag包括：
+此命令会检查Maya中当前帧所有节点的计算结果与Nemo是否匹配，并生成日志文件。
+
+NemoCheck命令有两个参数，分别是[导出](#导出)的 Debug JSON 和 nemodata。运行前请确认是用相同版本的工具导出的Debug JSON。
+
+除此之外的Flag包括：
 
 - id(ignoreDeformer)        默认为开。因为变形器检查的时间很长，所以可以用此选项跳过所有的变形器
 - ns(namespace)             默认为空。Rig的命名空间，不需要时可以留空
@@ -122,4 +126,5 @@ print cmds.NemoCheck(path_debug, path_resource, ns='<your-namespace>', od='<your
 
 ### 一些限制
 
-- closestPointOnSurface在端点处可能出现U或V的坐标与标准值发生很大漂移，这是因为在极点处U或V不影响取点的位置。
+- closestPointOnSurface在端点处可能出现U或V的坐标与Maya发生很大漂移，这是因为在极点处U或V不影响取点的位置。
+- closestPointOnMesh的最近点如果落在模型边上可能导致面ID与Maya不一致。
