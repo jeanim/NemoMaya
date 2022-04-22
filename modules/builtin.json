@@ -231,6 +231,26 @@
   {"name": "animCurveTA", "redirect": "animCurveUU"},
   {"name": "animCurveTU", "redirect": "animCurveUU"},
   {
+    "name": "bezierCurve",
+    "is_dag": true,
+    "unit": "bezier",
+    "inherit": "transform",
+    "filters": [
+      {
+        "target": "local",
+        "actions": [{"name": "controlPoints[*]", "action": "add"}]
+      }
+    ],
+    "methods": [
+      {
+        "name": "curve_from_bezier",
+        "returns": [{"name": "local", "type": "Curve"}],
+        "ignores": ["header", "cached"],
+        "parameters": [{"name": "controlPoints[*]", "type": "Vec3[]"}]
+      }
+    ]
+  },
+  {
     "name": "blendColors",
     "methods": [
       {
@@ -312,6 +332,18 @@
     ]
   },
   {
+    "name": "choice",
+    "methods": [
+      {
+        "returns": [{"name": "output", "type": "Float"}],
+        "parameters": [
+          {"name": "input[*]", "type": "Float[]", "stack": true},
+          {"name": "selector", "type": "Int"}
+        ]
+      }
+    ]
+  },
+  {
     "name": "clamp",
     "filters": [
       {
@@ -385,6 +417,22 @@
         ],
         "parameters": [
           {"name": "inputSurface", "type": "Surface", "mutable": true},
+          {"name": "inPosition", "type": "Vec3"}
+        ]
+      }
+    ]
+  },
+  {
+    "name": "closestPointOnMesh",
+    "methods": [
+      {
+        "returns": [
+          {"name": "position", "type": "Vec3"},
+          {"name": "closestFaceIndex", "type": "Int"},
+          {"name": "closestVertexIndex", "type": "Int"}
+        ],
+        "parameters": [
+          {"name": "inMesh", "type": "Mesh"},
           {"name": "inPosition", "type": "Vec3"}
         ]
       }
@@ -621,6 +669,7 @@
       }
     ]
   },
+  {"name": "deformTwist", "is_dag": true},
   {
     "name": "deltaMush",
     "is_deformer": true,
@@ -701,7 +750,12 @@
   },
   {
     "name": "ffd",
-    "ignores": ["outsideLattice", "outsideFalloffDist"],
+    "ignores": [
+      "outsideLattice",
+      "outsideFalloffDist",
+      "weightList",
+      "weights"
+    ],
     "is_deformer": true,
     "methods": [
       {
@@ -829,6 +883,15 @@
           {"action": "clear"},
           {"name": "latticeInput", "action": "add"}
         ]
+      },
+      {
+        "target": "worldLattice",
+        "actions": [
+          {"name": "cached", "action": "remove"},
+          {"name": "latticeInput", "action": "remove"},
+          {"name": "latticePointMoved", "action": "remove"},
+          {"name": "latticeOutput", "action": "add"}
+        ]
       }
     ],
     "methods": [
@@ -836,6 +899,15 @@
         "is_dummy": true,
         "returns": [{"name": "latticeOutput", "type": "Lattice"}],
         "parameters": [{"name": "latticeInput", "type": "Lattice"}]
+      },
+      {
+        "name": "worldLattice",
+        "returns": [{"name": "worldLattice[0]", "type": "Curve"}],
+        "ignores": ["sDivisions", "tDivisions", "uDivisions", "tweak"],
+        "parameters": [
+          {"name": "latticeOutput", "type": "Lattice", "mutable": true},
+          {"name": "worldMatrix[0]", "type": "Mat4"}
+        ]
       }
     ]
   },
@@ -864,6 +936,7 @@
         "parameters": [
           {"name": "inputCurve[*]", "type": "Curve[]", "stack": true},
           {"name": "sectionSpans", "type": "Int"},
+          {"name": "degree", "type": "Int"},
           {"name": "uniform", "type": "Bool"}
         ]
       }
@@ -890,7 +963,7 @@
       },
       {
         "is_dummy": true,
-        "ignores": ["inMesh"],
+        "ignores": ["inMesh", "cachedInMesh"],
         "returns": [{"name": "worldMesh[0]", "type": "Mesh"}],
         "parameters": [{"name": "outMesh", "type": "Mesh"}]
       },
@@ -1014,6 +1087,18 @@
     "filters": [{"target": "output", "actions": [{"action": "clear"}]}]
   },
   {
+    "name": "nearestPointOnCurve",
+    "methods": [
+      {
+        "returns": [{"name": "parameter", "type": "Float"}],
+        "parameters": [
+          {"name": "inputCurve", "type": "Curve"},
+          {"name": "inPosition", "type": "Vec3"}
+        ]
+      }
+    ]
+  },
+  {
     "name": "nonLinear",
     "is_deformer": true,
     "filters": [
@@ -1046,7 +1131,48 @@
         ]
       },
       {
+        "name": "deformTwist",
+        "returns": [{"name": "outputGeometry[$0]", "type": "Shape"}],
+        "parameters": [
+          {"name": "input[$0].inputGeometry", "type": "Shape", "mutable": true},
+          {"name": "envelope", "type": "Float"},
+          {"name": "matrix", "type": "Mat4"},
+          {
+            "name": "lowBound",
+            "outside_module": "deformTwist",
+            "type": "Float"
+          },
+          {
+            "name": "highBound",
+            "outside_module": "deformTwist",
+            "type": "Float"
+          },
+          {
+            "name": "startAngle",
+            "outside_module": "deformTwist",
+            "type": "Float"
+          },
+          {"name": "endAngle", "outside_module": "deformTwist", "type": "Float"}
+        ]
+      },
+      {
         "name": "deformBend",
+        "returns": [{"name": "outputGeometry[$0]", "type": "Shape"}],
+        "parameters": [
+          {"name": "input[$0].inputGeometry", "type": "Shape", "mutable": true},
+          {"name": "envelope", "type": "Float"},
+          {"name": "matrix", "type": "Mat4"},
+          {
+            "name": "curvature",
+            "outside_module": "deformBend",
+            "type": "Float"
+          },
+          {"name": "lowBound", "outside_module": "deformBend", "type": "Float"},
+          {"name": "highBound", "outside_module": "deformBend", "type": "Float"}
+        ]
+      },
+      {
+        "name": "deformBendPartial",
         "returns": [{"name": "outputGeometry[$0]", "type": "Shape"}],
         "parameters": [
           {"name": "input[$0].inputGeometry", "type": "Shape", "mutable": true},
@@ -1327,6 +1453,31 @@
     ]
   },
   {
+    "name": "pointOnPolyConstraint",
+    "unit": "follicle",
+    "is_dag": true,
+    "ignores": ["enableRestPosition"],
+    "methods": [
+      {
+        "name": "pointOnPolyTranslate",
+        "returns": [{"name": "constraintTranslate", "type": "Vec3"}],
+        "parameters": [
+          {"name": "target[0].targetMesh", "type": "Mesh"},
+          {"name": "target[0].targetUV", "type": "Vec2"}
+        ]
+      },
+      {
+        "name": "pointOnPolyRotate",
+        "returns": [{"name": "constraintRotate", "type": "Vec3"}],
+        "parameters": [
+          {"name": "target[0].targetMesh", "type": "Mesh"},
+          {"name": "target[0].targetUV", "type": "Vec2"},
+          {"name": "constraintRotateOrder", "type": "Int"}
+        ]
+      }
+    ]
+  },
+  {
     "name": "pointMatrixMult",
     "methods": [
       {
@@ -1476,6 +1627,7 @@
     "methods": [
       {
         "returns": [{"name": "outputCurve", "type": "Curve"}],
+        "ignores": ["endKnots", "tolerance"],
         "parameters": [
           {"name": "inputCurve", "type": "Curve"},
           {"name": "degree", "type": "Int"},
@@ -1703,6 +1855,18 @@
     ]
   },
   {
+    "name": "transferAttributes",
+    "is_deformer": true,
+    "ignores": [],
+    "methods": [
+      {
+        "is_dummy": true,
+        "returns": [{"name": "outputGeometry[0]", "type": "Shape"}],
+        "parameters": [{"name": "input[0].inputGeometry", "type": "Shape"}]
+      }
+    ]
+  },
+  {
     "name": "tweak",
     "is_deformer": true,
     "ignores": ["vlist"],
@@ -1723,6 +1887,15 @@
         "returns": [{"name": "output", "type": "Float"}],
         "parameters": [
           {"name": "input", "type": "Float"},
+          {"name": "conversionFactor", "type": "Float"}
+        ]
+      },
+      {
+        "name": "unitConversion2D",
+        "is_generic": true,
+        "returns": [{"name": "output", "type": "Vec2"}],
+        "parameters": [
+          {"name": "input", "type": "Vec2"},
           {"name": "conversionFactor", "type": "Float"}
         ]
       },
@@ -1759,7 +1932,9 @@
           {"name": "input[0].inputGeometry", "type": "Shape", "mutable": true},
           {"name": "rotation", "type": "Float"},
           {"name": "baseWire[0]", "type": "Curve"},
-          {"name": "deformedWire[0]", "type": "Curve"}
+          {"name": "deformedWire[0]", "type": "Curve"},
+          {"name": "wireLocatorParameter[*]", "type": "Float[]"},
+          {"name": "wireLocatorTwist[*]", "type": "Float[]"}
         ]
       }
     ]

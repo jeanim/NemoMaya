@@ -22,6 +22,7 @@
 from __future__ import print_function
 from maya import cmds
 from nemo import utils
+import maya.api.OpenMaya as om2
 
 
 def get_enum_field(plug):
@@ -58,20 +59,31 @@ def list_channel_box(obj):
 def get_history(plug):
     sources = cmds.listConnections(plug, p=True, s=True, d=False)
     if not sources:
-        return []
+        sources = []
+        maya_plug = om2.MGlobal.getSelectionListByName(plug).getPlug(0)
+        node = om2.MFnDependencyNode(maya_plug.node())
+        for attr in node.getAffectingAttributes(maya_plug.attribute()):
+            sources.append(node.findPlug(attr, True).name())
+
+    if not sources:
+        return [plug]
+
     return sum([get_history(x) for x in sources], [])
 
 
 def is_visibility_always_off(obj):
     if cmds.getAttr('{}.visibility'.format(obj)):
         return False
-    history = get_history('{}.visibility'.format(obj))
+    plug = '{}.visibility'.format(obj)
+    history = get_history(plug)
     if not history:
         return True
-    for plug in history:
-        if cmds.getAttr(plug, lock=True):
+    for x in history:
+        if x == plug:
             continue
-        if not cmds.getAttr(plug, cb=True):
+        if cmds.getAttr(x, lock=True):
+            continue
+        if cmds.getAttr(x, cb=True) or cmds.getAttr(x, k=True):
             return False
     return True
 
@@ -104,6 +116,8 @@ def is_channel_box_driven(ctrl):
 
 
 def get_extra(ctrl):
+    if ctrl == 'IKArm_R':
+        return 'IKExtraArm_R'
     parent = cmds.listRelatives(ctrl, p=True)
     if not parent:
         return None

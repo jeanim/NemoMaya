@@ -101,8 +101,12 @@ def assemble(path_config, path_scene, path_bin, path_resource, identifier, dll_m
             elif attr == 'parentMatrix0':
                 dest = cmds.listRelatives(obj, p=True)[0]
             elif attr == 'lodVisibility':
-                dest = '{}.visibility'.format(obj)
-                if not cmds.objExists(dest):
+                segments = cmds.ls(obj, long=True)[0].split('|')[1:]
+                for x in segments[::-1]:
+                    if x.startswith('NEMO_'):
+                        dest = '{}.visibility'.format(x)
+                        break
+                else:
                     dest = '{}.visibility'.format(obj)
             else:
                 dest = '{}.{}'.format(obj, attr)
