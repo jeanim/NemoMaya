@@ -233,20 +233,52 @@
   {
     "name": "bezierCurve",
     "is_dag": true,
-    "unit": "bezier",
+    "unit": "curve",
     "inherit": "transform",
     "filters": [
       {
+        "target": "worldSpace[0]",
+        "actions": [
+          {"name": "local", "action": "add"},
+          {"name": "cached", "action": "remove"},
+          {"name": "controlPoints", "action": "remove"}
+        ]
+      },
+      {
         "target": "local",
-        "actions": [{"name": "controlPoints[*]", "action": "add"}]
+        "actions": [
+          {"name": "cached", "action": "remove"},
+          {"name": "controlPoints[*]", "action": "add"}
+        ]
       }
     ],
     "methods": [
+      {
+        "is_dummy": true,
+        "ignores": ["header", "tweak", "cached", "create"],
+        "returns": [{"name": "local", "type": "Curve"}],
+        "parameters": [{"name": "create", "type": "Curve"}]
+      },
       {
         "name": "curve_from_bezier",
         "returns": [{"name": "local", "type": "Curve"}],
         "ignores": ["header", "cached"],
         "parameters": [{"name": "controlPoints[*]", "type": "Vec3[]"}]
+      },
+      {
+        "is_dummy": true,
+        "returns": [{"name": "worldSpace[0]", "type": "Curve"}],
+        "ignores": ["header", "tweak", "cached", "create"],
+        "parameters": [{"name": "local", "type": "Curve"}]
+      },
+      {
+        "name": "worldCurve",
+        "returns": [{"name": "worldSpace[0]", "type": "Curve"}],
+        "ignores": ["header", "tweak", "cached", "create"],
+        "parameters": [
+          {"name": "local", "type": "Curve", "mutable": true},
+          {"name": "worldMatrix[0]", "type": "Mat4"}
+        ]
       }
     ]
   },
@@ -433,6 +465,7 @@
         ],
         "parameters": [
           {"name": "inMesh", "type": "Mesh"},
+          {"name": "inputMatrix", "type": "Mat4"},
           {"name": "inPosition", "type": "Vec3"}
         ]
       }
@@ -876,6 +909,7 @@
   {
     "name": "lattice",
     "is_dag": true,
+    "ignores": ["tweak"],
     "filters": [
       {
         "target": "latticeOutput",
@@ -890,6 +924,9 @@
           {"name": "cached", "action": "remove"},
           {"name": "latticeInput", "action": "remove"},
           {"name": "latticePointMoved", "action": "remove"},
+          {"name": "sDivisions", "action": "remove"},
+          {"name": "tDivisions", "action": "remove"},
+          {"name": "uDivisions", "action": "remove"},
           {"name": "latticeOutput", "action": "add"}
         ]
       }
@@ -903,7 +940,6 @@
       {
         "name": "worldLattice",
         "returns": [{"name": "worldLattice[0]", "type": "Curve"}],
-        "ignores": ["sDivisions", "tDivisions", "uDivisions", "tweak"],
         "parameters": [
           {"name": "latticeOutput", "type": "Lattice", "mutable": true},
           {"name": "worldMatrix[0]", "type": "Mat4"}
@@ -955,6 +991,15 @@
       "pnts",
       "dispResolution"
     ],
+    "filters": [
+      {
+        "target": "worldMesh[0]",
+        "actions": [
+          {"name": "inMesh", "action": "remove"},
+          {"name": "cachedInMesh", "action": "remove"}
+        ]
+      }
+    ],
     "methods": [
       {
         "is_dummy": true,
@@ -963,13 +1008,17 @@
       },
       {
         "is_dummy": true,
-        "ignores": ["inMesh", "cachedInMesh"],
+        "returns": [{"name": "outMesh", "type": "Mesh"}],
+        "ignores": ["inMesh"],
+        "parameters": [{"name": "cachedInMesh", "type": "Mesh"}]
+      },
+      {
+        "is_dummy": true,
         "returns": [{"name": "worldMesh[0]", "type": "Mesh"}],
         "parameters": [{"name": "outMesh", "type": "Mesh"}]
       },
       {
         "name": "worldMesh",
-        "ignores": ["inMesh"],
         "returns": [{"name": "worldMesh[0]", "type": "Mesh"}],
         "parameters": [
           {"name": "outMesh", "type": "Mesh", "mutable": true},
@@ -1090,7 +1139,10 @@
     "name": "nearestPointOnCurve",
     "methods": [
       {
-        "returns": [{"name": "parameter", "type": "Float"}],
+        "returns": [
+          {"name": "position", "type": "Vec3"},
+          {"name": "parameter", "type": "Float"}
+        ],
         "parameters": [
           {"name": "inputCurve", "type": "Curve"},
           {"name": "inPosition", "type": "Vec3"}
@@ -1462,6 +1514,7 @@
         "name": "pointOnPolyTranslate",
         "returns": [{"name": "constraintTranslate", "type": "Vec3"}],
         "parameters": [
+          {"name": "constraintParentInverseMatrix", "type": "Mat4"},
           {"name": "target[0].targetMesh", "type": "Mesh"},
           {"name": "target[0].targetUV", "type": "Vec2"}
         ]
@@ -1470,6 +1523,7 @@
         "name": "pointOnPolyRotate",
         "returns": [{"name": "constraintRotate", "type": "Vec3"}],
         "parameters": [
+          {"name": "constraintParentInverseMatrix", "type": "Mat4"},
           {"name": "target[0].targetMesh", "type": "Mesh"},
           {"name": "target[0].targetUV", "type": "Vec2"},
           {"name": "constraintRotateOrder", "type": "Int"}
@@ -1857,7 +1911,15 @@
   {
     "name": "transferAttributes",
     "is_deformer": true,
-    "ignores": [],
+    "filters": [
+      {
+        "target": "outputGeometry[0]",
+        "actions": [
+          {"action": "clear"},
+          {"name": "input[0].inputGeometry", "action": "add"}
+        ]
+      }
+    ],
     "methods": [
       {
         "is_dummy": true,
