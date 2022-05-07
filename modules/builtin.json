@@ -938,8 +938,13 @@
         "parameters": [{"name": "latticeInput", "type": "Lattice"}]
       },
       {
+        "is_dummy": true,
+        "returns": [{"name": "worldLattice[0]", "type": "Lattice"}],
+        "parameters": [{"name": "latticeOutput", "type": "Lattice"}]
+      },
+      {
         "name": "worldLattice",
-        "returns": [{"name": "worldLattice[0]", "type": "Curve"}],
+        "returns": [{"name": "worldLattice[0]", "type": "Lattice"}],
         "parameters": [
           {"name": "latticeOutput", "type": "Lattice", "mutable": true},
           {"name": "worldMatrix[0]", "type": "Mat4"}
@@ -1351,6 +1356,35 @@
   },
   {
     "name": "pairBlend",
+    "filters": [
+      {
+        "target": "outTranslateX",
+        "actions": [
+          {"name": "inTranslate1", "action": "remove"},
+          {"name": "inTranslate2", "action": "remove"},
+          {"name": "inTranslateX1", "action": "add"},
+          {"name": "inTranslateX2", "action": "add"}
+        ]
+      },
+      {
+        "target": "outTranslateY",
+        "actions": [
+          {"name": "inTranslate1", "action": "remove"},
+          {"name": "inTranslate2", "action": "remove"},
+          {"name": "inTranslateY1", "action": "add"},
+          {"name": "inTranslateY2", "action": "add"}
+        ]
+      },
+      {
+        "target": "outTranslateZ",
+        "actions": [
+          {"name": "inTranslate1", "action": "remove"},
+          {"name": "inTranslate2", "action": "remove"},
+          {"name": "inTranslateZ1", "action": "add"},
+          {"name": "inTranslateZ2", "action": "add"}
+        ]
+      }
+    ],
     "methods": [
       {
         "name": "pairBlendRotate",
@@ -1363,7 +1397,37 @@
         ]
       },
       {
-        "name": "pairBlendTranslate",
+        "name": "pairBlendTranslate1D",
+        "returns": [{"name": "outTranslateX", "type": "Float"}],
+        "parameters": [
+          {"name": "inTranslateX1", "type": "Float"},
+          {"name": "inTranslateX2", "type": "Float"},
+          {"name": "weight", "type": "Float"},
+          {"name": "translateXMode", "type": "Int"}
+        ]
+      },
+      {
+        "name": "pairBlendTranslate1D",
+        "returns": [{"name": "outTranslateY", "type": "Float"}],
+        "parameters": [
+          {"name": "inTranslateY1", "type": "Float"},
+          {"name": "inTranslateY2", "type": "Float"},
+          {"name": "weight", "type": "Float"},
+          {"name": "translateYMode", "type": "Int"}
+        ]
+      },
+      {
+        "name": "pairBlendTranslate1D",
+        "returns": [{"name": "outTranslateZ", "type": "Float"}],
+        "parameters": [
+          {"name": "inTranslateZ1", "type": "Float"},
+          {"name": "inTranslateZ2", "type": "Float"},
+          {"name": "weight", "type": "Float"},
+          {"name": "translateZMode", "type": "Int"}
+        ]
+      },
+      {
+        "name": "pairBlendTranslate3D",
         "returns": [{"name": "outTranslate", "type": "Vec3"}],
         "parameters": [
           {"name": "inTranslate1", "type": "Vec3"},
@@ -1949,6 +2013,15 @@
         "returns": [{"name": "output", "type": "Float"}],
         "parameters": [
           {"name": "input", "type": "Float"},
+          {"name": "conversionFactor", "type": "Float"}
+        ]
+      },
+      {
+        "name": "unitConversion1DInt",
+        "is_generic": true,
+        "returns": [{"name": "output", "type": "Float"}],
+        "parameters": [
+          {"name": "input", "type": "Int"},
           {"name": "conversionFactor", "type": "Float"}
         ]
       },
