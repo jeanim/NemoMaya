@@ -82,7 +82,7 @@ assembler.show()
 动画师使用Rig时除了需要在组装阶段生成的maya文件之外，还包括：
 
 - 与角色匹配的插件，不同的角色需使用不同的插件。当然，不同角色的插件可以同时加载。
--* nemodata资源文件。这个资源文件的路径在maya文件中指明，属性名通常是`<your-rig-id>1.resource`
+- *.nemodata资源文件。这个资源文件的路径在maya文件中指明，属性名通常是`<your-rig-id>1.resource`
 
 💡 Linux系统可以考虑在env中设置`__GL_SYNC_TO_VBLANK=0`, 会节省帧刷新时间
 
